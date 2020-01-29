@@ -67,7 +67,7 @@ class MyImage():
             cv2.destroyAllWindows()
 
 
-    def compute_data(self, filter_data=False):
+    def compute_data(self, filter_data=True):
         """Get data from pytesseract for the image
 
         This functions provides data about the text on the image (it's bounding boxes,
