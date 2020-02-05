@@ -1,16 +1,17 @@
 """This module handles the image processing"""
 import cv2
-# import numpy as np
+import numpy as np
 import pandas as pd
+import pixcat
 import pytesseract
 from PIL import Image
-import pixcat
+from tqdm import tqdm
 
 
 class MyImage():
     """This class is capable of storing the image and interacting with pytesseract"""
 
-    def __init__(self, path=None, resize=None, *, kitty=None, jupyter=None):
+    def __init__(self, *, img=None, path=None, resize=None, kitty=None, jupyter=None):
         """Initialize the class
 
         If resize argument is float, it specifies the scaling percent. If it's a tuple,
@@ -28,18 +29,17 @@ class MyImage():
         self.data = None
         self.string = None
 
-        if path:
+        if img is not None:
+            self.img = img
+        elif path is not None:
             self.get_img(path)
             if resize is not None:
                 self.__resize(resize)
 
-        if kitty is not None:
-            self.kitty = kitty
-
 
     def get_img(self, path: str):
         """Read image from the disk"""
-        self.img = cv2.imread(path)
+        self.img = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
 
 
     def show(self, *, annotate=False, method=None):
@@ -56,10 +56,10 @@ class MyImage():
         else:
             img = self.img
         if method == "kitty" or self.kitty:
-            pixcat.Image(Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))).\
+            pixcat.Image(Image.fromarray(img)).\
                 thumbnail(512).show(align="left")
         elif method == "jupyter" or self.jupyter:
-            return Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            return Image.fromarray(img)
         else:
             cv2.imshow('image', img)
             while cv2.waitKey(0) != 27:
@@ -67,7 +67,7 @@ class MyImage():
             cv2.destroyAllWindows()
 
 
-    def compute_data(self, filter_data=True):
+    def compute_data(self, filter_data=True, add_img=True):
         """Get data from pytesseract for the image
 
         This functions provides data about the text on the image (it's bounding boxes,
@@ -77,11 +77,18 @@ class MyImage():
             img (): input image
         """
         #  TODO: Check for rotation later <20-01-20, astadnik> #
-        img = Image.fromarray(cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB))
+        img = Image.fromarray(self.img)
         data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
         self.data = pd.DataFrame(data)
         if filter_data:
             self.__filter_data()
+        if add_img:
+            imgs = []
+            for i in tqdm(self.data.index):
+                s = self.data.loc[i, :]
+                l, t, w, h = s['left':'height']
+                imgs.append(self.img[t:t+h, l:l+w])
+            self.data.loc[:, 'img'] = imgs
         return self.data
 
     def get_str(self):
@@ -115,7 +122,7 @@ class MyImage():
             if show_confidence:
                 text_to_show += conf
             cv2.putText(img_, str(text_to_show), (l+4, t+7), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.4, (255, 255, 255),  1)
+                        0.4, (255, 255, 255), 1)
         return img_
 
     def __filter_data(self):
@@ -144,4 +151,4 @@ class MyImage():
                 dim = resize
         else:
             raise RuntimeError("Wrong resize argument: " + str(resize))
-        self.img = cv2.resize(self.img, dim, interpolation=cv2.INTER_AREA)
+        self.img = cv2.resize(self.img, dim)
