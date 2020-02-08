@@ -1,23 +1,20 @@
 """This is the main module"""
 
-import cv2
-
 from helpers import parse_args
-from myimage import MyImage
-from myimage_ga import MyImageGA
+from genetic_algorithm import GeneticAlgorithm
 
 
 def main():
     """Main function"""
     args = parse_args()
 
-    img = MyImageGA(path=args.image, resize=(1280, -1))
-    img.compute_data()
-    data = img.data
+    model = GeneticAlgorithm(path=args.image, noise_val=0, resize=(1280, -1), n=10)
+    model.run()
+    # img = MyImageGA(noise_val=0, path=args.image, resize=(1280, -1))
+    # img.compute_data()
 
-    if len(data['img']) > 8:
-        img_ = MyImage(img=data['img'][8])
-    img_.show()
+    # data = img.data
+
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,14 @@
+argparse
+opencv-python
+numpy
+pandas
+pixcat
+pytesseract
+tqdm
+jedi
+ipdb
+ipython
+jupyterlab
+autopep8
+rope
+intervaltree

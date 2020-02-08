@@ -35,6 +35,8 @@ class MyImage():
             self.get_img(path)
             if resize is not None:
                 self.__resize(resize)
+        else:
+            raise RuntimeError("You should provide the image")
 
 
     def get_img(self, path: str):
@@ -51,13 +53,9 @@ class MyImage():
             annotate (bool, optional): Set to true to display image with additional data
             method (string, optional): kitty, jupyter or None
         """
-        if annotate:
-            img = self.__annotate(show_text=True)
-        else:
-            img = self.img
+        img = self.__annotate(show_text=True) if annotate else self.img
         if method == "kitty" or self.kitty:
-            pixcat.Image(Image.fromarray(img)).\
-                thumbnail(512).show(align="left")
+            pixcat.Image(Image.fromarray(img)).thumbnail(512).show(align="left")
         elif method == "jupyter" or self.jupyter:
             return Image.fromarray(img)
         else:
@@ -67,7 +65,7 @@ class MyImage():
             cv2.destroyAllWindows()
 
 
-    def compute_data(self, filter_data=True, add_img=True):
+    def compute_data(self, filter_data=True, add_img=False):
         """Get data from pytesseract for the image
 
         This functions provides data about the text on the image (it's bounding boxes,
@@ -95,9 +93,6 @@ class MyImage():
         """Generate string from image
 
         This function extracts text from the image
-
-        Args:
-            image (): input image
         """
         #  TODO: Check for rotation later <20-01-20, astadnik> #
         img = Image.fromarray(cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB))

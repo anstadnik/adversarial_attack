@@ -5,6 +5,7 @@ path = "test.png"
 
 img = MyImageGA(path=path, resize=(1280, -1))
 img.compute_data()
+
 img.show()
 
 data = img.data
