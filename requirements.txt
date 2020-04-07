@@ -12,3 +12,5 @@ jupyterlab
 autopep8
 rope
 intervaltree
+plotly
+snoop

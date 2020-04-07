@@ -1,19 +1,22 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """This is the main module"""
 
 from helpers import parse_args
-from genetic_algorithm import GeneticAlgorithm
+from img import ImgOCR
+# from genetic_algorithm import GeneticAlgorithm
 
 
 def main():
     """Main function"""
     args = parse_args()
 
-    model = GeneticAlgorithm(path=args.image, noise_val=0, resize=(1280, -1), n=10)
-    model.run()
-    # img = MyImageGA(noise_val=0, path=args.image, resize=(1280, -1))
-    # img.compute_data()
-
-    # data = img.data
+    img = ImgOCR(path=args.image)
+    img.resize((1280, -1))
+    # img.show(annotate=True)
+    img.compute_text_item(filter_data=True)
+    img.show(annotate=args.annotate)
 
 
 if __name__ == "__main__":
