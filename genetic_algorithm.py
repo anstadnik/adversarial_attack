@@ -9,6 +9,7 @@ from statistics import mean
 import numpy as np
 import pytesseract
 from tqdm import tqdm, trange
+import pickle
 
 from text_item import TextItem
 from multiprocessing.pool import Pool
@@ -58,8 +59,8 @@ class GeneticAlgorithm():
     This is the class which implements the genetic algorithm.
     """
 
-    def __init__(self, ti: TextItem, pool_size: int = 1000, mutation_rate: float = 0.01,
-                 n_iter: int = int(1e6)):
+    def __init__(self, ti: TextItem, pool_size: int = 1000, mutation_rate: float
+                 = 0.0001, n_iter: int = int(1e6)):
         self.pool_size = pool_size
         self.mutation_rate = mutation_rate
         self.n_iter = n_iter
@@ -71,10 +72,14 @@ class GeneticAlgorithm():
         with trange(self.n_iter) as t:
             for i in t:
                 self.comp_score()
-                t.set_description(f'Score: {mean(self.scores)}')
+                t.set_description(
+                    f'Score: mean = {mean(self.scores)}, min = {min(self.scores)}')
                 self.evolve()
                 if not i % 10:
-                    tqdm.write(f'Score at {i} iteration: {mean(self.scores)}')
+                    tqdm.write(
+                        f'Score at {i} iteration: mean = {mean(self.scores)}, min = {min(self.scores)}')
+                    with open('pool.pickle', 'wb') as f:
+                        pickle.dump(self.pool, f)
 
     def setup(self, ti: TextItem):
         for _ in range(self.pool_size):
@@ -83,15 +88,16 @@ class GeneticAlgorithm():
             self.pool.append(c)
 
     def comp_score(self):
-        with Pool(cpu_count(), initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
+        n_cpu = cpu_count() - 4
+        with Pool(n_cpu, initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
             self.scores = list(tqdm(
                 p.imap(score, self.pool),
-                desc='Computing scores with {cpu_count()} cores',
+                desc=f'Computing scores with {n_cpu} cores',
                 total=len(self.pool), leave=False))
 
     def evolve(self):
         pool = []
-        scores = 100 - np.array(self.scores)
+        scores = (100 - np.array(self.scores)) ** 3
         scores = scores / sum(scores)
         for _ in trange(self.pool_size, desc='Updating pool', leave=False):
             f, m = np.random.choice(self.pool, size=2, replace=False,
