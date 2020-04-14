@@ -2,6 +2,7 @@
 This module contains ImgOCR class
 """
 from dataclasses import astuple
+from typing import List
 
 import cv2
 import pixcat
@@ -34,7 +35,7 @@ class ImgOCR(Img):
                 if l <= x <= l + w and t <= y <= t + h:
                     print(text)
 
-    def compute_text_data(self, filter_data=True, add_img=False):
+    def compute_text_data(self, filter_data=True, add_img=True) -> List[TextItem]:
         """Get list of TextItem from pytesseract for the image
 
         This functions provides data about the text on the image (it's bounding boxes,
