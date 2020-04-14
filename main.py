@@ -6,6 +6,8 @@
 from helpers import parse_args
 from img_ocr import ImgOCR
 from text_item import TextItem
+from genetic_algorithm import GeneticAlgorithm
+from ipdb import launch_ipdb_on_exception
 
 
 def main():
@@ -16,7 +18,10 @@ def main():
     img.resize((1280, -1))
     data = img.compute_text_data()
 
-    # img.show(annotate=args.annotate)
+    d = data[1]
+    model = GeneticAlgorithm(d, pool_size=10)
+    with launch_ipdb_on_exception():
+        model.run()
 
 
 if __name__ == "__main__":
