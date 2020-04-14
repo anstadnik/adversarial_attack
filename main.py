@@ -19,7 +19,7 @@ def main():
     data = img.compute_text_data()
 
     d = data[1]
-    model = GeneticAlgorithm(d, pool_size=10)
+    model = GeneticAlgorithm(d)
     with launch_ipdb_on_exception():
         model.run()
 

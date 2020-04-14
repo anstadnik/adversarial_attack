@@ -11,19 +11,21 @@ import pytesseract
 from tqdm import tqdm, trange
 
 from text_item import TextItem
-# from multiprocessing.pool import Pool
+from multiprocessing.pool import Pool
+from multiprocessing import cpu_count
 
 
-def score(img, c=6) -> int:
+def score(ti: TextItem, c=6) -> int:
     """
     Compute the score for the image
 
     The score is the confidence of the recognized text
 
-    :param img PIL.Image: Input image
+    :param img TextItem: Input text item with image
     :param c int: psm argument for tesseract
     :rtype int: score
     """
+    img = ti.get_pil()
     d_ = pytesseract.image_to_data(
         img, output_type=pytesseract.Output.DICT, config=f'--psm {c}')
     return max([c for c in d_['conf'] if isinstance(c, int)])
@@ -71,7 +73,7 @@ class GeneticAlgorithm():
                 self.comp_score()
                 t.set_description(f'Score: {mean(self.scores)}')
                 self.evolve()
-                if not i % 100:
+                if not i % 10:
                     tqdm.write(f'Score at {i} iteration: {mean(self.scores)}')
 
     def setup(self, ti: TextItem):
@@ -81,9 +83,11 @@ class GeneticAlgorithm():
             self.pool.append(c)
 
     def comp_score(self):
-        self.scores = []
-        for ti in tqdm(self.pool, desc='Computing scores', leave=False):
-            self.scores.append(score(ti.get_pil()))
+        with Pool(cpu_count(), initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
+            self.scores = list(tqdm(
+                p.imap(score, self.pool),
+                desc='Computing scores with {cpu_count()} cores',
+                total=len(self.pool), leave=False))
 
     def evolve(self):
         pool = []
