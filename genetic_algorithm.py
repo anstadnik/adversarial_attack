@@ -29,7 +29,8 @@ def score(ti: TextItem, c=6) -> int:
     img = ti.get_pil()
     d_ = pytesseract.image_to_data(
         img, output_type=pytesseract.Output.DICT, config=f'--psm {c} --oem 0')
-    return max([c for c in d_['conf'] if isinstance(c, int)])
+    # Add normalization by noise sum
+    return max([c for c in d_['conf'] if isinstance(c, int)] + [0])
 
 
 def crossover(f: TextItem, m: TextItem, mr: float) -> TextItem:
@@ -72,6 +73,8 @@ class GeneticAlgorithm():
         with trange(self.n_iter) as t:
             for i in t:
                 self.comp_score()
+                if min(self.scores) == 0:
+                    return self.pool[np.argmin(self.scores)]
                 t.set_description(
                     f'Score: mean = {mean(self.scores)}, min = {min(self.scores)}')
                 self.evolve()
@@ -99,9 +102,12 @@ class GeneticAlgorithm():
         pool = []
         scores = (100 - np.array(self.scores)) ** 3
         scores = scores / sum(scores)
-        for _ in trange(self.pool_size, desc='Updating pool', leave=False):
+        n_min_to_save = 20
+        for _ in trange(self.pool_size - n_min_to_save, desc='Updating pool', leave=False):
             f, m = np.random.choice(self.pool, size=2, replace=False,
                                     p=scores)
             child = crossover(f, m, self.mutation_rate)
             pool.append(child)
+        pool.extend(sorted(self.pool, key = lambda ti: ti.score)[:20])
+        assert (len(pool) == self.pool_size)
         self.pool = pool
