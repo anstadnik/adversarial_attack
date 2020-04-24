@@ -46,8 +46,8 @@ class ImgOCR(Img):
         """
         img = Image.fromarray(self.img)
         data = pytesseract.image_to_data(
-            img, output_type=pytesseract.Output.DICT)
-        # 'level',# Page, block, paragraph, line, word
+            img, output_type=pytesseract.Output.DICT, config=f'--psm 6 --oem 0')
+        # 'level',# Page, block, paragraph, line, word 
         # 'page_num', 'block_num', 'par_num', 'line_num', 'word_num',
         # 'left', 'top', 'width', 'height', 'conf', 'text',
 
@@ -73,7 +73,7 @@ class ImgOCR(Img):
         This function extracts text from the image
         """
         img = Image.fromarray(cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB))
-        self.string = pytesseract.image_to_string(img)
+        self.string = pytesseract.image_to_string(img, config=f'--psm 6 --oem 0')
         return self.string
 
     def show(self, *, annotate=False, method=None):

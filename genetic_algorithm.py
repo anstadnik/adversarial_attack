@@ -28,7 +28,7 @@ def score(ti: TextItem, c=6) -> int:
     """
     img = ti.get_pil()
     d_ = pytesseract.image_to_data(
-        img, output_type=pytesseract.Output.DICT, config=f'--psm {c}')
+        img, output_type=pytesseract.Output.DICT, config=f'--psm {c} --oem 0')
     return max([c for c in d_['conf'] if isinstance(c, int)])
 
 
