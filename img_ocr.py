@@ -31,7 +31,7 @@ class ImgOCR(Img):
             if self.data is None:
                 return
             for v in self.data:
-                l, t, w, h, _, text, _ = astuple(v)
+                l, t, w, h, _, text, _, _, _ = astuple(v)
                 if l <= x <= l + w and t <= y <= t + h:
                     print(text)
 
@@ -99,7 +99,7 @@ class ImgOCR(Img):
         """
         img_ = self.img.copy()
         for v in self.data:
-            l, t, w, h, conf, text, _ = astuple(v)
+            l, t, w, h, conf, text, _, _, _ = astuple(v)
             cv2.rectangle(img_, (l, t), (l+w, t+h), (0, 0, 0), -2)
             text_to_show = ""
             if show_text:

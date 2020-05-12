@@ -74,6 +74,8 @@ class GeneticAlgorithm():
             for i in t:
                 self.comp_score()
                 if min(self.scores) == 0:
+                    tqdm.write(
+                        f'Got 0 confidence at {i} iteration')
                     return self.pool[np.argmin(self.scores)]
                 t.set_description(
                     f'Score: mean = {mean(self.scores)}, min = {min(self.scores)}')
@@ -108,6 +110,7 @@ class GeneticAlgorithm():
                                     p=scores)
             child = crossover(f, m, self.mutation_rate)
             pool.append(child)
-        pool.extend(sorted(self.pool, key = lambda ti: ti.score)[:20])
+        # pool.extend(sorted(self.pool, key = lambda ti: ti.score)[:20])
+        pool.extend([self.pool[i] for i in np.argsort(self.scores)[:20]])
         assert (len(pool) == self.pool_size)
         self.pool = pool
