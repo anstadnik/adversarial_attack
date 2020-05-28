@@ -48,10 +48,10 @@ def main():
                                'v': 1,
                                'tqdm_pos': i})
 
-    with Pool(cpu_count(), initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
-        # rez = list(tqdm(p.imap(pred, params), total=len(params)))
-        rez = p.map(pred, params)
+    # with Pool(cpu_count(), initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
+    #     rez = p.map(pred, params)
 
+    rez = map(pred, params)
     rez = [{**{k: v for k, v in p.items() if k not in {'img', 'target', 'v'}},
             **{'first_score': r[0], 'iterations_needed': r[1], 'best_confidence': r[2]}}
            for p, r in zip(params, rez)]

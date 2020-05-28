@@ -28,7 +28,7 @@ def generate_data(size: int = 1000) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     return _generate_data(size)
 
 
-def pred(imgs: np.ndarray, v=False) -> List[np.ndarray]:
+def pred(imgs: np.ndarray, use_log=True, v=False) -> List[np.ndarray]:
     """
     Return predictions for images
 
@@ -37,7 +37,7 @@ def pred(imgs: np.ndarray, v=False) -> List[np.ndarray]:
     """
     # with tf_debug.TensorBoardDebugWrapsperSession(tf.Session(), 'localhost:6064') as sess:
     with tf.Session() as sess:
-        model = _MNISTModel('mnist/models/mnist', sess, use_log=True)
+        model = _MNISTModel('mnist/models/mnist', sess, use_log)
         image_dim = 28
         image_channels = 1
         num_labels = 10
@@ -47,8 +47,8 @@ def pred(imgs: np.ndarray, v=False) -> List[np.ndarray]:
         test_pred = tf.argmax(model.predict(test_in), axis=1)
         test_pred = model.predict(test_in)
 
-        orig_pred = [sess.run(test_pred, feed_dict={
-            test_in: [img]})[0] for img in tqdm(imgs, disable=not v)]
+        orig_pred = np.array([sess.run(test_pred, feed_dict={
+            test_in: [img]})[0] for img in tqdm(imgs, disable=not v)])
 
         # px.imshow(img.reshape((28, 28))).show()
         # print(orig_pred)

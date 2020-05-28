@@ -1,5 +1,4 @@
 argparse
-opencv-python
 numpy
 pandas
 # pixcat
@@ -11,6 +10,6 @@ ipython
 jupyterlab
 autopep8
 rope
-intervaltree
 plotly
 snoop
+keras
