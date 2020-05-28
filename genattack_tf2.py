@@ -105,7 +105,7 @@ class GenAttack2(object):
             size=parent1.shape) > pp2).astype(np.float32)
         childs = parent1 * xover_prop + parent2 * (1-xover_prop)
         idx += 1
-        pp(idx, np.min(loss), win_margin, step_p, step_noise, new_cur_plateau_count)
+        # pp(idx, np.min(loss), win_margin, step_p, step_noise, new_cur_plateau_count)
         margin_log = np.concatenate([margin_log, [[win_margin]]], axis=0)
         mutated_childs = self.mutation_op(
             childs, idx=idx, step_noise=self.eps*step_noise, p=step_p)
@@ -184,7 +184,7 @@ class GenAttack2(object):
         self.best_win_margin = np.array(-1.0, dtype=np.float32)
         self.cur_plateau_count = np.array(0, dtype=np.int32)
         self.num_plateaus = 0
-        print('Population initailized')
+        # print('Population initailized')
 
     def attack(self, input_img, target_label):
         self.initialize(input_img, target_label)
