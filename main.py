@@ -53,8 +53,8 @@ def main():
         rez = p.map(pred, params)
 
     rez = [{**{k: v for k, v in p.items() if k not in {'img', 'target', 'v'}},
-            **{'iterations_needed': r[0], 'best_confidence': r[1]}}
-            for p, r in zip(params, rez)]
+            **{'first_score': r[0], 'iterations_needed': r[1], 'best_confidence': r[2]}}
+           for p, r in zip(params, rez)]
 
     with open('rezults.pickle', 'wb') as f:
         pickle.dump(rez, f)

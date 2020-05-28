@@ -64,32 +64,31 @@ class GeneticAlgorithm():
         self.tqdm_pos = tqdm_pos
         self.pool = [np.random.rand(*img.shape) / 5 - 0.1
                      for _ in range(pool_size)]
+        self.comp_score(v=False)
+        self.first_score = mean(self.scores)
 
-    def finish(self, i):
-        self.iterations_needed = i
+    def finish(self):
         self.best_confidence = max(self.scores)
         # return self.img + self.pool[np.argmax(self.scores)]
-        return self.iterations_needed, self.best_confidence, self.img + self.pool[np.argmax(self.scores)]
+        return self.first_score, self.iterations_needed, self.best_confidence, self.img + self.pool[np.argmax(self.scores)]
 
     def run(self, v=0):
         scores = []
-        self.comp_score(v=v >= 2)
-        first_score = mean(self.scores)
         with trange(self.n_iter, disable=not v>=1, position=self.tqdm_pos) as t:
             for i in t:
-                self.comp_score(v=v >= 2)
+                self.comp_score(v=v>=2)
                 t.set_description(
                         f'Score: mean={mean(self.scores):.3e}, '
                         f'max={max(self.scores):.3e}, '
-                        f'std={np.std(self.scores):.3e}'
-                        f'diff={first_score - mean(self.scores):.3e}')
+                        f'std={np.std(self.scores):.3e}, '
+                        f'diff={self.first_score - mean(self.scores):.3e}')
                 if max(self.scores) > 0.95:
-                    return self.finish(i)
+                    self.iterations_needed = i
+                    return self.finish()
                 self.evolve()
                 scores.append(mean(self.scores))
-                if i and not i % 100:
-                    px.line(y=scores).show()
-        return self.finish(i)
+                self.iterations_needed = i
+        return self.finish()
 
     def comp_score(self, v=True):
         """
