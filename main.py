@@ -31,12 +31,12 @@ def main():
     params = []
     img = inputs[0]
     target = np.nonzero(targets[0])[0][0]
-    # for pool_size in 2 ** np.arange(2, 12, step=3):
-    #     for mutation_rate in [0.3, 0.1, 0.05, 0.01]:
-    #         for n_of_elite in [1, 3]:
-    for pool_size in 2 ** np.arange(2, 6, step=1):
-        for mutation_rate in [0.3]:
-            for n_of_elite in [1]:
+    for pool_size in 2 ** np.arange(2, 12, step=3):
+        for mutation_rate in [0.3, 0.1, 0.05, 0.01]:
+            for n_of_elite in [1, 3]:
+    # for pool_size in 2 ** np.arange(2, 6, step=1):
+    #     for mutation_rate in [0.3]:
+    #         for n_of_elite in [1]:
                 params.append({'img': img,
                                'target': target,
                                'pool_size': pool_size,
