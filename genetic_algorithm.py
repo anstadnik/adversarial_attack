@@ -71,23 +71,24 @@ class GeneticAlgorithm():
 
     def run(self, v=False):
         scores = []
-        for i in (t := trange(self.n_iter, disable=not v)):
-            self.comp_score(v=v)
-            if max(self.scores) > 0.95:
-                t.write(f'Got {max(self.scores)} confidence at {i} iteration')
-                return self.finish(i)
-            t.set_description(
-                f'Score: mean = {mean(self.scores)}, '
-                f'max = {max(self.scores)}, std = {np.std(self.scores)}')
-            self.evolve()
-            if not i % 10 and v:
-                t.write(f'Score at {i} iteration: mean = {mean(self.scores)}, '
+        with trange(self.n_iter, disable=not v) as t:
+                for i in t:
+                    self.comp_score(v=v)
+                    if max(self.scores) > 0.95:
+                        t.write(f'Got {max(self.scores)} confidence at {i} iteration')
+                        return self.finish(i)
+                    t.set_description(
+                        f'Score: mean = {mean(self.scores)}, '
                         f'max = {max(self.scores)}, std = {np.std(self.scores)}')
-                # with open('pool.pickle', 'wb') as f:
-                #     pickle.dump(self.pool, f)
-            scores.append(mean(self.scores))
-            if i and not i % 100:
-                px.line(y=scores).show()
+                    self.evolve()
+                    if not i % 10 and v:
+                        t.write(f'Score at {i} iteration: mean = {mean(self.scores)}, '
+                                f'max = {max(self.scores)}, std = {np.std(self.scores)}')
+                        # with open('pool.pickle', 'wb') as f:
+                        #     pickle.dump(self.pool, f)
+                    scores.append(mean(self.scores))
+                    if i and not i % 100:
+                        px.line(y=scores).show()
         return self.finish(i)
 
     def comp_score(self, v=True):

@@ -2,7 +2,7 @@ argparse
 opencv-python
 numpy
 pandas
-pixcat
+# pixcat
 pytesseract
 tqdm
 jedi
