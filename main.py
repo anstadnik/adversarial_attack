@@ -31,22 +31,26 @@ def main():
     params = []
     img = inputs[0]
     target = np.nonzero(targets[0])[0][0]
-    for pool_size in 2 ** np.arange(2, 12, step=3):
+    i = 1
+    for pool_size in [4, 10, 50, 200]:
         for mutation_rate in [0.3, 0.1, 0.05, 0.01]:
             for n_of_elite in [1, 3]:
     # for pool_size in 2 ** np.arange(2, 6, step=1):
     #     for mutation_rate in [0.3]:
     #         for n_of_elite in [1]:
+                i += 1
                 params.append({'img': img,
                                'target': target,
                                'pool_size': pool_size,
                                'mutation_rate': mutation_rate,
                                'n_of_elite': n_of_elite,
-                               'n_iter': 2,
-                               'v': False})
+                               'n_iter': 10000,
+                               'v': 1,
+                               'tqdm_pos': i})
 
     with Pool(cpu_count(), initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
-        rez = list(tqdm(p.imap(pred, params), total=len(params)))
+        # rez = list(tqdm(p.imap(pred, params), total=len(params)))
+        rez = p.map(pred, params)
 
     rez = [{**{k: v for k, v in p.items() if k not in {'img', 'target', 'v'}},
             **{'iterations_needed': r[0], 'best_confidence': r[1]}}

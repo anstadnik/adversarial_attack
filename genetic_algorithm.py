@@ -51,7 +51,8 @@ class GeneticAlgorithm():
     """
 
     def __init__(self, img, target=0, n_of_elite: int = 2, pool_size: int = 1000,
-                 mutation_rate: float = 0.01, n_iter: int = int(1e6)):
+                 mutation_rate: float = 0.01, n_iter: int = int(1e6),
+                 tqdm_pos=None):
         self.pool_size = pool_size
         self.target = target
         self.mutation_rate = mutation_rate
@@ -60,6 +61,7 @@ class GeneticAlgorithm():
         self.img = img
         self.n_of_elite = n_of_elite
         self.needed_iterations = None
+        self.tqdm_pos = tqdm_pos
         self.pool = [np.random.rand(*img.shape) / 5 - 0.1
                      for _ in range(pool_size)]
 
@@ -69,26 +71,24 @@ class GeneticAlgorithm():
         # return self.img + self.pool[np.argmax(self.scores)]
         return self.iterations_needed, self.best_confidence, self.img + self.pool[np.argmax(self.scores)]
 
-    def run(self, v=False):
+    def run(self, v=0):
         scores = []
-        with trange(self.n_iter, disable=not v) as t:
-                for i in t:
-                    self.comp_score(v=v)
-                    if max(self.scores) > 0.95:
-                        t.write(f'Got {max(self.scores)} confidence at {i} iteration')
-                        return self.finish(i)
-                    t.set_description(
-                        f'Score: mean = {mean(self.scores)}, '
-                        f'max = {max(self.scores)}, std = {np.std(self.scores)}')
-                    self.evolve()
-                    if not i % 10 and v:
-                        t.write(f'Score at {i} iteration: mean = {mean(self.scores)}, '
-                                f'max = {max(self.scores)}, std = {np.std(self.scores)}')
-                        # with open('pool.pickle', 'wb') as f:
-                        #     pickle.dump(self.pool, f)
-                    scores.append(mean(self.scores))
-                    if i and not i % 100:
-                        px.line(y=scores).show()
+        self.comp_score(v=v >= 2)
+        first_score = mean(self.scores)
+        with trange(self.n_iter, disable=not v>=1, position=self.tqdm_pos) as t:
+            for i in t:
+                self.comp_score(v=v >= 2)
+                t.set_description(
+                        f'Score: mean={mean(self.scores):.3e}, '
+                        f'max={max(self.scores):.3e}, '
+                        f'std={np.std(self.scores):.3e}'
+                        f'diff={first_score - mean(self.scores):.3e}')
+                if max(self.scores) > 0.95:
+                    return self.finish(i)
+                self.evolve()
+                scores.append(mean(self.scores))
+                if i and not i % 100:
+                    px.line(y=scores).show()
         return self.finish(i)
 
     def comp_score(self, v=True):
@@ -96,7 +96,7 @@ class GeneticAlgorithm():
         Compute the confidence of the recognized text for the images
         """
         self.scores = [r[self.target]
-                       for r in pred(self.img + self.pool, v)]
+                for r in pred(self.img + self.pool, v)]
 
     def evolve(self):
         pool = []
@@ -106,12 +106,12 @@ class GeneticAlgorithm():
         # for _ in trange(self.pool_size - n_min_to_save, desc='Updating pool', leave=False):
         for _ in range(self.pool_size - self.n_of_elite):
             f, m = np.random.choice(range(self.pool_size), size=2, replace=False,
-                                    p=scores)
+                    p=scores)
             f, m = self.pool[f], self.pool[m]
             child = crossover(f, m, self.mutation_rate)
             pool.append(child)
         # pool.extend(sorted(self.pool, key = lambda ti: ti.score)[:20])
         pool.extend([self.pool[i]
-                     for i in np.argsort(scores)[-self.n_of_elite:]])
+            for i in np.argsort(scores)[-self.n_of_elite:]])
         assert (len(pool) == self.pool_size)
         self.pool = pool
