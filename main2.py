@@ -15,7 +15,6 @@ from multiprocessing.pool import Pool
 from multiprocessing import cpu_count
 from tqdm import tqdm
 
-model = 'mnist'
 test_size = 1000
 mutation_rate = 0.30
 alpha = 0.5
@@ -88,17 +87,21 @@ def test(pop_size, mutation_rate):
 def test_kwargs(kwargs):
     return test(**kwargs)
 
-if __name__ == '__main__':
+def main():
     params = []
-    for pop_size in [2, 4, 10, 50, 100]:
+    for pop_size in [4, 6, 10, 50, 100]:
         for mutation_rate in [0.3, 0.1, 0.05, 0.01]:
             params.append({'pop_size': pop_size,
                 'mutation_rate': mutation_rate})
 
-    with Pool(cpu_count(), initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
-        rez = p.map(test_kwargs, params)
-    rez = [{**{k: v for k, v in p.items()}, 'margin_log': m}
-           for p, m in zip(params, rez)]
+    # rez = map(test_kwargs, params)
+    rez = test_kwargs(params[4])
+    # with Pool(cpu_count(), initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
+        # rez = p.map(test_kwargs, params)
+    rez = [{**p, 'margin_log': m} for p, m in zip(params, rez)]
 
     with open('rezults_stolen.pickle', 'wb') as f:
         pickle.dump(rez, f)
+
+if __name__ == '__main__':
+    main()
