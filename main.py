@@ -5,10 +5,7 @@
 
 from helpers import parse_args
 from img_ocr import ImgOCR
-from text_item import TextItem
-from genetic_algorithm import GeneticAlgorithm
-from ipdb import launch_ipdb_on_exception
-
+# from attack import gen_noise
 
 def main():
     """Main function"""
@@ -17,13 +14,12 @@ def main():
     img = ImgOCR(path=args.image)
     img.resize((1280, -1))
     data = img.compute_text_data()
-    # img.show(annotate=True)
+    img.show(annotate=True)
 
-    d = data[1]
-    model = GeneticAlgorithm(d)
-    model.run()
+    # with open('img.pickle', 'wb') as f:
+    #     pickle.dump(img, f)
 
 
 if __name__ == "__main__":
-    with launch_ipdb_on_exception():
-        main()
+    # with launch_ipdb_on_exception():
+    main()

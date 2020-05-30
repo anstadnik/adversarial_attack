@@ -51,8 +51,10 @@ class Img():
             cv2.namedWindow('image')
             cv2.setMouseCallback('image', self.mouse_callback)
             cv2.imshow('image', img)
-            while cv2.waitKey(0) != 27:
-                continue
+            while True:
+                key = cv2.waitKey(0)
+                if key == 27:
+                    break
             cv2.destroyAllWindows()
         return None
 

@@ -12,6 +12,9 @@ from tqdm import tqdm
 
 from text_item import TextItem
 from img import Img
+import numpy as np
+from attack import gen_noise
+from multiprocessing import Pool
 
 class ImgOCR(Img):
     """This class is capable of interacting with pytesseract"""
@@ -25,15 +28,22 @@ class ImgOCR(Img):
         super().__init__(img=img, path=path)
         self.data = None
         self.string = None
+        self.process_all = False
 
     def mouse_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
             if self.data is None:
                 return
-            for v in self.data:
-                l, t, w, h, _, text, _, _, _ = astuple(v)
+            for d in self.data:
+                l, t, w, h, _, text, _, _, _ = astuple(d)
                 if l <= x <= l + w and t <= y <= t + h:
-                    print(text)
+                    img_with_noise = gen_noise((d.img.astype(np.float) / 255) - 0.5)
+                    if img_with_noise:
+                        img_with_noise = (img_with_noise[0] + 0.5) * 255
+                        self.img[t:t+h, l:l+w] = img_with_noise
+                        self.compute_text_data()
+                        img = self.__annotate(show_text=True)
+                        self.update(img=img)
 
     def compute_text_data(self, filter_data=True, add_img=True) -> List[TextItem]:
         """Get list of TextItem from pytesseract for the image
@@ -44,6 +54,7 @@ class ImgOCR(Img):
         Args:
             img (): input image
         """
+        print('Computing data...')
         img = Image.fromarray(self.img)
         data = pytesseract.image_to_data(
             img, output_type=pytesseract.Output.DICT, config=f'--psm 6 --oem 0')
@@ -65,6 +76,7 @@ class ImgOCR(Img):
             for v in tqdm(self.data, leave=False):
                 l, t, w, h = v.left, v.top, v.width, v.height
                 v.img = self.img[t:t+h, l:l+w]
+        print('Data is computed')
         return self.data
 
     def get_str(self):
@@ -86,7 +98,62 @@ class ImgOCR(Img):
             method (string, optional): kitty, jupyter or None
         """
         img = self.__annotate(show_text=True) if annotate else self.img
-        super().show(img=img, method=method)
+
+        if img is None:
+            return None
+        if method == "kitty":
+            pixcat.Image(Image.fromarray(img)).thumbnail(
+                512).show(align="left")
+        elif method == "jupyter":
+            return Image.fromarray(img)
+        else:
+            cv2.namedWindow('image')
+            cv2.setMouseCallback('image', self.mouse_callback)
+            cv2.imshow('image', img)
+            # wait = p.apply_async(cv2.waitKey, args=(0, ))
+            # key = None
+            while True:
+                # if wait.ready():
+                #     key = wait.get()
+                    # wait = p.apply_async(cv2.waitKey, args=(0, ))
+                key = cv2.waitKey(1)
+
+                if key == 27:
+                    break
+                elif key == 97:
+                    annotate = not annotate
+                    img = self.__annotate(show_text=True) if annotate else self.img
+                    cv2.imshow('image', img)
+                elif key == 114:
+                    self.compute_text_data()
+                    img = self.__annotate(show_text=True) if annotate else self.img
+                    self.update(img=img)
+                elif key == 112:
+                    self.process_all = True
+
+                if self.process_all:
+                    data = self.compute_text_data()
+                    img = self.__annotate(show_text=True)
+                    cv2.imshow('image', img)
+                    if not data:
+                        break
+                    i = 0
+                    d = data[0]
+                    while d.conf < 10:
+                        i += 1
+                        d = data[i]
+
+                    l, t, w, h, _, text, _, _, _ = astuple(d)
+                    img_with_noise = gen_noise((d.img.astype(np.float) / 255) - 0.5)
+                    if img_with_noise:
+                        img_with_noise = (img_with_noise[0] + 0.5) * 255
+                        self.img[t:t+h, l:l+w] = img_with_noise
+                    else:
+                        print('SHIIIIT')
+
+
+            cv2.destroyAllWindows()
+        return None
 
 
     def __annotate(self, *, show_text=False, show_confidence=False):
