@@ -14,8 +14,8 @@ def main():
     img = ImgOCR(path=args.image)
     img.resize((1280, -1))
     data = img.compute_text_data()
-    # img.process(pop_size_=int(args.pop_size), mutation_rate_=float(args.mutation_rate))
-    img.show(annotate=True)
+    img.process(pop_size_=int(args.pop_size), mutation_rate_=float(args.mutation_rate))
+    # img.show(annotate=True)
 
     # with open('img.pickle', 'wb') as f:
     #     pickle.dump(img, f)

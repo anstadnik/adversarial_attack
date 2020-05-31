@@ -6,6 +6,7 @@ import numpy as np
 import pytesseract
 from PIL import Image
 import pickle
+import atexit
 
 from genattack_tf2 import GenAttack2
 
@@ -64,9 +65,9 @@ def gen_noise(img, pop_size_ = None, mutation_rate_ = None):
     if result is not None:
         adv_img, query_count, margin_log = result
         rez.append(margin_log)
-        if len(rez) >= 200:
-            print('bye')
-            exit()
+        # if len(rez) >= 200:
+        #     print('bye')
+        #     exit()
         # final_pred = sess.run(test_pred, feed_dict={
         #                       test_in: [adv_img]})[0]
     else:

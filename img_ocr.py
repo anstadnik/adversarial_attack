@@ -28,7 +28,8 @@ class ImgOCR(Img):
         super().__init__(img=img, path=path)
         self.data = None
         self.string = None
-        self.process_all = False
+        self.data_to_process = None
+        self.tqdm = None
 
     def mouse_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -120,7 +121,7 @@ class ImgOCR(Img):
 
                 if key == 27:
                     break
-                elif key == 97:
+                if key == 97:
                     annotate = not annotate
                     img = self.__annotate(show_text=True) if annotate else self.img
                     cv2.imshow('image', img)
@@ -128,20 +129,18 @@ class ImgOCR(Img):
                     self.compute_text_data()
                     img = self.__annotate(show_text=True) if annotate else self.img
                     self.update(img=img)
-                elif key == 112:
-                    self.process_all = True
+                elif key == 112 and not self.data_to_process:
+                    self.data_to_process = self.compute_text_data()
+                    self.tqdm = tqdm(total=len(self.data_to_process))
 
-                if self.process_all:
-                    data = self.compute_text_data()
-                    img = self.__annotate(show_text=True)
-                    cv2.imshow('image', img)
-                    if not data:
-                        break
-                    i = 0
-                    d = data[0]
-                    while d.conf < 10:
-                        i += 1
-                        d = data[i]
+                if self.data_to_process:
+                    d = self.data_to_process.pop()
+                    self.tqdm.update()
+                    if not self.data_to_process:
+                        self.data_to_process = None
+                        self.tqdm = None
+                    if d.conf < 10:
+                        continue
 
                     l, t, w, h, _, text, _, _, _ = astuple(d)
                     img_with_noise = gen_noise((d.img.astype(np.float) / 255) - 0.5)
@@ -151,22 +150,18 @@ class ImgOCR(Img):
                     else:
                         print('SHIIIIT')
 
+                    self.compute_text_data()
+                    img = self.__annotate(show_text=True)
+                    cv2.imshow('image', img)
+
 
             cv2.destroyAllWindows()
         return None
 
     def process(self, pop_size_=None, mutation_rate_=None):
-        while True:
-            data = self.compute_text_data()
-            img = self.__annotate(show_text=True)
-            if not data:
-                exit()
-            i = 0
-            d = data[0]
-            while d.conf < 10:
-                i += 1
-                d = data[i]
-
+        for d in tqdm(self.compute_text_data()):
+            if d.conf < 10:
+                continue
             l, t, w, h, _, text, _, _, _ = astuple(d)
             img_with_noise = gen_noise((d.img.astype(np.float) / 255) - 0.5,
                     pop_size_, mutation_rate_)
