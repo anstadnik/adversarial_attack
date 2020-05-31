@@ -193,6 +193,7 @@ class ImgOCR(Img):
                 text_to_show += text
             if show_confidence:
                 text_to_show += conf
-            cv2.putText(img_, str(text_to_show), (l+4, t+7), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.4, (255, 255, 255), 1)
+            font_scale = (w * h) / (img_.shape[0] * img_.shape[1])
+            cv2.putText(img_, str(text_to_show), (l+2, t+h-4), cv2.FONT_HERSHEY_SIMPLEX,
+                        1, (255, 255, 255), 1)
         return img_
