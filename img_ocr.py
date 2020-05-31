@@ -15,6 +15,7 @@ from img import Img
 import numpy as np
 from attack import gen_noise
 from multiprocessing import Pool
+from imageio import imwrite
 
 class ImgOCR(Img):
     """This class is capable of interacting with pytesseract"""
@@ -129,6 +130,8 @@ class ImgOCR(Img):
                     self.compute_text_data()
                     img = self.__annotate(show_text=True) if annotate else self.img
                     self.update(img=img)
+                elif key == 115:
+                    imwrite('changed_img.png', self.img)
                 elif key == 112 and not self.data_to_process:
                     self.data_to_process = self.compute_text_data()
                     self.tqdm = tqdm(total=len(self.data_to_process))

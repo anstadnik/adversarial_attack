@@ -1,6 +1,3 @@
-"""
-Author: Moustafa Alzantot (malzantot@ucla.edu)
-"""
 import time
 import random
 import numpy as np
