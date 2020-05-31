@@ -155,7 +155,27 @@ class ImgOCR(Img):
             cv2.destroyAllWindows()
         return None
 
+    def process(self, pop_size_=None, mutation_rate_=None):
+        while True:
+            data = self.compute_text_data()
+            img = self.__annotate(show_text=True)
+            if not data:
+                exit()
+            i = 0
+            d = data[0]
+            while d.conf < 10:
+                i += 1
+                d = data[i]
 
+            l, t, w, h, _, text, _, _, _ = astuple(d)
+            img_with_noise = gen_noise((d.img.astype(np.float) / 255) - 0.5,
+                    pop_size_, mutation_rate_)
+            if img_with_noise:
+                img_with_noise = (img_with_noise[0] + 0.5) * 255
+                self.img[t:t+h, l:l+w] = img_with_noise
+            else:
+                print('SHIIIIT')
+        
     def __annotate(self, *, show_text=False, show_confidence=False):
         """This function annotates the image with bounding boxes and textes or confidences
 

@@ -10,21 +10,21 @@ import urllib
 
 class _MNIST:
     def __init__(self):
-        if not os.path.exists("data"):
-            os.mkdir("data")
+        if not os.path.exists("mnist/data"):
+            os.mkdir("mnist/data")
             files = ["train-images-idx3-ubyte.gz",
                      "t10k-images-idx3-ubyte.gz",
                      "train-labels-idx1-ubyte.gz",
                      "t10k-labels-idx1-ubyte.gz"]
             for name in files:
                 urllib.request.urlretrieve(
-                    'http://yann.lecun.com/exdb/mnist/' + name, "data/"+name)
+                    'http://yann.lecun.com/exdb/mnist/' + name, "mnist/data/"+name)
 
-        train_data = _extract_data("data/train-images-idx3-ubyte.gz", 60000)
-        train_labels = _extract_labels("data/train-labels-idx1-ubyte.gz", 60000)
-        self.test_data = _extract_data("data/t10k-images-idx3-ubyte.gz", 10000)
+        train_data = _extract_data("mnist/data/train-images-idx3-ubyte.gz", 60000)
+        train_labels = _extract_labels("mnist/data/train-labels-idx1-ubyte.gz", 60000)
+        self.test_data = _extract_data("mnist/data/t10k-images-idx3-ubyte.gz", 10000)
         self.test_labels = _extract_labels(
-            "data/t10k-labels-idx1-ubyte.gz", 10000)
+            "mnist/data/t10k-labels-idx1-ubyte.gz", 10000)
 
         validation_size = 5000
 

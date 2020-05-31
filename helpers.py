@@ -18,4 +18,7 @@ def parse_args() -> argparse.Namespace:
     #                     default=False, help="Display the image")
     parser.add_argument("-a", "--annotate", action="store_true",
                         default=False, help="Annotate the image")
+    parser.add_argument("-p", "--pop_size", default=None, help="Population size")
+    parser.add_argument("-m", "--mutation_rate", default=None,
+                        help="Mutation rate")
     return parser.parse_args()

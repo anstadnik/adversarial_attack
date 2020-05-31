@@ -31,6 +31,10 @@ class Img():
     def mouse_callback(self, event, x, y, flags, param):
         """Callback for using with cv2.imshow"""
 
+    def update(self, *, img=None, method=None):
+        img = img if img is not None else self.img
+        cv2.imshow('image', img)
+
     def show(self, *, img=None, method=None):
         """Display the image
 
