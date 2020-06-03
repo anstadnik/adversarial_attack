@@ -51,5 +51,4 @@ class TextItem(Img):
 
     @noise.setter
     def noise(self, noise: np.array):
-        s = self._img + noise
         self._noise = np.clip(noise, None, (255 - self._img))

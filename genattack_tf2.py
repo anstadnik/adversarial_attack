@@ -109,8 +109,8 @@ class GenAttack2(object):
         childs = parent1 * xover_prop + parent2 * (1-xover_prop)
         # Index of iteration
         idx += 1
-        print(idx, np.max(loss), win_margin, step_p, step_noise,
-                new_cur_plateau_count, pop_preds)
+        # print(idx, np.max(loss), win_margin, step_p, step_noise,
+        #         new_cur_plateau_count, pop_preds)
         margin_log = np.concatenate([margin_log, [[win_margin]]], axis=0)
         # Apply mutation to the population
         mutated_childs = self.mutation_op(

@@ -16,9 +16,9 @@ class Img():
         :param img np.array: raw image
         :param path str: path to image
         """
-        if img:
+        if img is not None:
             self.img = img
-        elif path:
+        elif path is not None:
             self.load_img(path)
         else:
             raise RuntimeError("You should provide the image")

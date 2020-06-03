@@ -32,6 +32,14 @@ class ImgOCR(Img):
         self.data_to_process = None
         self.tqdm = None
 
+    def hide_data(self, d):
+        l, t, w, h, _, text, _, _, _ = astuple(d)
+        img_with_noise = gen_noise((d.img.astype(np.float) / 255) - 0.5)
+        if img_with_noise:
+            img_with_noise = (img_with_noise[0] + 0.5) * 255
+            self.img[t:t+h, l:l+w] = img_with_noise
+        
+
     def mouse_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
             if self.data is None:
@@ -39,13 +47,10 @@ class ImgOCR(Img):
             for d in self.data:
                 l, t, w, h, _, text, _, _, _ = astuple(d)
                 if l <= x <= l + w and t <= y <= t + h:
-                    img_with_noise = gen_noise((d.img.astype(np.float) / 255) - 0.5)
-                    if img_with_noise:
-                        img_with_noise = (img_with_noise[0] + 0.5) * 255
-                        self.img[t:t+h, l:l+w] = img_with_noise
-                        self.compute_text_data()
-                        img = self.__annotate(show_text=True)
-                        self.update(img=img)
+                    self.hide_data(d)
+                    self.compute_text_data()
+                    img = self.__annotate(show_text=True)
+                    self.update(img=img)
 
     def compute_text_data(self, filter_data=True, add_img=True) -> List[TextItem]:
         """Get list of TextItem from pytesseract for the image
@@ -56,7 +61,7 @@ class ImgOCR(Img):
         Args:
             img (): input image
         """
-        print('Computing data...')
+        # print('Computing data...')
         img = Image.fromarray(self.img)
         data = pytesseract.image_to_data(
             img, output_type=pytesseract.Output.DICT, config=f'--psm 6 --oem 0')
@@ -78,7 +83,7 @@ class ImgOCR(Img):
             for v in tqdm(self.data, leave=False):
                 l, t, w, h = v.left, v.top, v.width, v.height
                 v.img = self.img[t:t+h, l:l+w]
-        print('Data is computed')
+        # print('Data is computed')
         return self.data
 
     def get_str(self):
