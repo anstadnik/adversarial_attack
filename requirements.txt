@@ -14,3 +14,4 @@ rope
 intervaltree
 plotly
 snoop
+imageio
