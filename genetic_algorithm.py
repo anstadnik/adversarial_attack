@@ -30,7 +30,7 @@ def score(ti: TextItem, c=6) -> int:
     d_ = pytesseract.image_to_data(
         img, output_type=pytesseract.Output.DICT, config=f'--psm {c} --oem 0')
     # Add normalization by noise sum
-    return max([c for c in d_['conf'] if isinstance(c, int)] + [0])
+    return 100 - max([c for c in d_['conf'] if isinstance(c, int)] + [0])
 
 
 def crossover(f: TextItem, m: TextItem, mr: float) -> TextItem:
@@ -51,7 +51,7 @@ def crossover(f: TextItem, m: TextItem, mr: float) -> TextItem:
     s = f.noise.shape
     child.noise = np.where(np.random.choice(b_opts, size=s), f.noise, m.noise)
     mask = np.random.choice(b_opts, size=s, p=((1 - mr), mr))
-    child.noise[mask] = np.random.randint(0, 10, size=s, dtype='uint8')[mask]
+    child.noise[mask] = np.random.randint(-50, 50, size=s, dtype='int8')[mask]
     return child
 
 
@@ -60,8 +60,8 @@ class GeneticAlgorithm():
     This is the class which implements the genetic algorithm.
     """
 
-    def __init__(self, ti: TextItem, pool_size: int = 1000, mutation_rate: float
-                 = 0.0001, n_iter: int = int(1e6)):
+    def __init__(self, ti: TextItem, pool_size: int = 30, mutation_rate: float
+                 = 0.3, n_iter: int = int(1e6)):
         self.pool_size = pool_size
         self.mutation_rate = mutation_rate
         self.n_iter = n_iter
@@ -73,9 +73,9 @@ class GeneticAlgorithm():
         with trange(self.n_iter) as t:
             for i in t:
                 self.comp_score()
-                if min(self.scores) == 0:
+                if min(self.scores) <= 10:
                     tqdm.write(
-                        f'Got 0 confidence at {i} iteration')
+                        f'Got 10 confidence at {i} iteration')
                     return self.pool[np.argmin(self.scores)]
                 t.set_description(
                     f'Score: mean = {mean(self.scores)}, min = {min(self.scores)}')
@@ -89,11 +89,11 @@ class GeneticAlgorithm():
     def setup(self, ti: TextItem):
         for _ in range(self.pool_size):
             c = copy(ti)
-            c.noise = np.random.randint(0, 10, size=c.img.shape, dtype='uint8')
+            c.noise = np.random.randint(-50, 50, size=c.img.shape, dtype='int8')
             self.pool.append(c)
 
     def comp_score(self):
-        n_cpu = cpu_count() - 4
+        n_cpu = cpu_count() - 2
         with Pool(n_cpu, initializer=tqdm.set_lock, initargs=(tqdm.get_lock(),)) as p:
             self.scores = list(tqdm(
                 p.imap(score, self.pool),
@@ -104,13 +104,14 @@ class GeneticAlgorithm():
         pool = []
         scores = (100 - np.array(self.scores)) ** 3
         scores = scores / sum(scores)
-        n_min_to_save = 20
+        n_min_to_save = 1
         for _ in trange(self.pool_size - n_min_to_save, desc='Updating pool', leave=False):
             f, m = np.random.choice(self.pool, size=2, replace=False,
                                     p=scores)
             child = crossover(f, m, self.mutation_rate)
             pool.append(child)
         # pool.extend(sorted(self.pool, key = lambda ti: ti.score)[:20])
-        pool.extend([self.pool[i] for i in np.argsort(self.scores)[:20]])
+        pool.extend([self.pool[i]
+                     for i in np.argsort(self.scores)[:n_min_to_save]])
         assert (len(pool) == self.pool_size)
         self.pool = pool

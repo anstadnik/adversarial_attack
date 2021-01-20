@@ -37,7 +37,7 @@ class TextItem(Img):
         if self._img is None:
             raise RuntimeError("Img is not setted")
         if self.noise is not None:
-            return self._img + self.noise
+            return (self._img + self.noise).astype(np.uint8)
         return self._img
 
     @img.setter
@@ -52,4 +52,4 @@ class TextItem(Img):
     @noise.setter
     def noise(self, noise: np.array):
         s = self._img + noise
-        self._noise = np.clip(noise, None, (255 - self._img))
+        self._noise = np.clip(noise, -1 * self._img, (255 - self._img))

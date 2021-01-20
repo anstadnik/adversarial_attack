@@ -17,11 +17,11 @@ def main():
     img = ImgOCR(path=args.image)
     img.resize((1280, -1))
     data = img.compute_text_data()
-    # img.show(annotate=True)
+    img.show(annotate=True)
 
-    d = data[1]
-    model = GeneticAlgorithm(d)
-    model.run()
+    # d = data[1]
+    # model = GeneticAlgorithm(d)
+    # model.run()
 
 
 if __name__ == "__main__":

@@ -3,9 +3,9 @@ This module contains ImgOCR class
 """
 from dataclasses import astuple
 from typing import List
+from genetic_algorithm import GeneticAlgorithm
 
 import cv2
-import pixcat
 import pytesseract
 from PIL import Image
 from tqdm import tqdm
@@ -34,6 +34,11 @@ class ImgOCR(Img):
                 l, t, w, h, _, text, _, _, _ = astuple(v)
                 if l <= x <= l + w and t <= y <= t + h:
                     print(text)
+                    model = GeneticAlgorithm(v)
+                    noise = model.run()
+                    self.img[t:t+h, l:l+w] = noise.img
+                    self.compute_text_data()
+                    self.update(img=self.img)
 
     def compute_text_data(self, filter_data=True, add_img=True) -> List[TextItem]:
         """Get list of TextItem from pytesseract for the image
