@@ -134,3 +134,13 @@ tags
 # Other
 /mnist/data/
 *.pickle
+
+# Images
+*.png
+*.jpg
+
+# Vim types
+/typings
+
+# Venv name
+.venv
