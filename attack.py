@@ -19,7 +19,7 @@ max_steps = 10000
 # max_steps = 1
 mutation_rate = 0.3
 # eps = 0.30
-eps = 1
+eps = 0.5
 output_dir = 'mnist_output'
 temp = 0.1
 
