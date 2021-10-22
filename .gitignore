@@ -136,7 +136,7 @@ tags
 *.pickle
 
 # Images
-*.png
+# *.png
 *.jpg
 
 # Vim types
